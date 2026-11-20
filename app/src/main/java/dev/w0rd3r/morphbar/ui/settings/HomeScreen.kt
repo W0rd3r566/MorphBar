@@ -39,7 +39,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -97,12 +97,12 @@ fun HomeScreen() {
     }
 
     val ready = overlayGranted && listenerGranted
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     Scaffold(
         modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
+            TopAppBar(
                 title = { Text("MorphBar") },
                 scrollBehavior = scrollBehavior,
             )
@@ -156,19 +156,19 @@ fun HomeScreen() {
                 SettingsCard {
                     SwitchRow(
                         title = "Музыка",
-                        subtitle = "Artwork, controls and a live progress bar",
+                        subtitle = "Обложка, управление и прогресс",
                         icon = Icons.Rounded.PlayCircle,
                         checked = settings.showMedia,
                     ) { value -> store.update { it.copy(showMedia = value) } }
                     SwitchRow(
                         title = "Уведомления",
-                        subtitle = "Peek at anything your channels let through",
+                        subtitle = "Только важные события из приложений",
                         icon = Icons.Rounded.Notifications,
                         checked = settings.showNotifications,
                     ) { value -> store.update { it.copy(showNotifications = value) } }
                     SwitchRow(
                         title = "Зарядка",
-                        subtitle = "A short battery peek when you plug in",
+                        subtitle = "Показывать подключение зарядки",
                         icon = Icons.Rounded.BatteryChargingFull,
                         checked = settings.showCharging,
                     ) { value -> store.update { it.copy(showCharging = value) } }
@@ -199,7 +199,7 @@ fun HomeScreen() {
                     SliderRow(
                         title = "Ширина капсулы",
                         value = settings.compactWidth,
-                        range = 110f..260f,
+                        range = 74f..94f,
                         valueLabel = "${settings.compactWidth.roundToInt()} dp",
                     ) { value -> store.update { it.copy(compactWidth = value) } }
                     SliderRow(
@@ -218,7 +218,7 @@ fun HomeScreen() {
                     HorizontalDivider(Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
                     SwitchRow(
                         title = "Цвет из обложки",
-                        subtitle = "Otherwise the island borrows your wallpaper palette",
+                        subtitle = "Иначе используется палитра обоев",
                         icon = Icons.Rounded.Colorize,
                         checked = settings.albumArtAccent,
                     ) { value -> store.update { it.copy(albumArtAccent = value) } }
@@ -246,7 +246,7 @@ fun HomeScreen() {
                     ) { value -> store.update { it.copy(tapAtRest = value) } }
                     SwitchRow(
                         title = "Показывать горизонтально",
-                        subtitle = "Off hides the island when the phone is not upright",
+                        subtitle = "По умолчанию капсула скрыта при повороте",
                         icon = Icons.Rounded.ScreenRotation,
                         checked = settings.landscape == LandscapeBehaviour.Follow,
                     ) { value ->
@@ -394,8 +394,8 @@ private fun AlignmentCard(
         Column(Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
             Text(
                 text = when {
-                    geometry == null -> "Measuring…"
-                    geometry.detected -> "Cutout detected: " +
+                    geometry == null -> "Определяем камеру…"
+                    geometry.detected -> "Камера: " +
                         "${geometry.width}×${geometry.height} px, " +
                         "${geometry.centerOffsetX} px from centre"
 
@@ -415,33 +415,33 @@ private fun AlignmentCard(
             title = "Сдвиг по X",
             value = offsetX,
             range = -12f..12f,
-            valueLabel = "${"%.1f".format(offsetX)} dp",
+            valueLabel = "${"%.1f".format(java.util.Locale.US, offsetX)} dp",
             onValueChange = onOffsetX,
         )
         SliderRow(
             title = "Сдвиг по Y",
             value = offsetY,
             range = -12f..12f,
-            valueLabel = "${"%.1f".format(offsetY)} dp",
+            valueLabel = "${"%.1f".format(java.util.Locale.US, offsetY)} dp",
             onValueChange = onOffsetY,
         )
         SliderRow(
             title = "Ширина вокруг камеры",
             value = bleedX,
             range = 0f..8f,
-            valueLabel = "${"%.1f".format(bleedX)} dp",
+            valueLabel = "${"%.1f".format(java.util.Locale.US, bleedX)} dp",
             onValueChange = onBleedX,
         )
         SliderRow(
             title = "Высота вокруг камеры",
             value = bleedY,
             range = 0f..8f,
-            valueLabel = "${"%.1f".format(bleedY)} dp",
+            valueLabel = "${"%.1f".format(java.util.Locale.US, bleedY)} dp",
             onValueChange = onBleedY,
         )
         SwitchRow(
             title = "Границы камеры",
-            subtitle = "Outlines the detected cutout so you can see what Islet sees",
+            subtitle = "Показывает границу выреза камеры",
             icon = Icons.Rounded.Visibility,
             checked = guide,
             onCheckedChange = onGuide,
