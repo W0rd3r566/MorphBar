@@ -46,6 +46,15 @@ class IsletNotificationListener : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification, rankingMap: RankingMap?) {
+        // MediaStyle artwork is independent of regular notification peeks.
+        val n = sbn.notification
+        if (n != null && (n.category == Notification.CATEGORY_TRANSPORT ||
+                    n.extras.containsKey(Notification.EXTRA_MEDIA_SESSION))) {
+            val art = runCatching {
+                n.getLargeIcon()?.loadDrawable(this)?.toSoftwareBitmap()
+            }.getOrNull()
+            if (art != null) IsletRepository.setArtworkHint(sbn.packageName, art)
+        }
         val notice = convert(sbn, rankingMap) ?: return
         IsletRepository.postNotice(notice)
     }
@@ -56,6 +65,11 @@ class IsletNotificationListener : NotificationListenerService() {
         reason: Int,
     ) {
         IsletRepository.dismissNotice(sbn.key)
+        val n = sbn.notification
+        if (n != null && (n.category == Notification.CATEGORY_TRANSPORT ||
+                    n.extras.containsKey(Notification.EXTRA_MEDIA_SESSION))) {
+            IsletRepository.clearArtworkHint(sbn.packageName)
+        }
     }
 
     private fun convert(sbn: StatusBarNotification, rankingMap: RankingMap?): NoticeSnapshot? {

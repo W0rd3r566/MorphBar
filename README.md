@@ -104,3 +104,7 @@ Reserved enough vertical space between playback transport controls and the new 1
 ## v0.5.2: continuous swipe threshold regression
 
 The collapse handle used to close on a single Android drag event with less than -6 px motion. This made slow swipes unreliable: individual frames often moved only 1–5 px. The new detector accumulates motion from the entire gesture, closes on drag end after 24 dp upward travel, cancels safely, and retains tap-to-close. This pure policy is covered by JVM unit tests. Real-device gestures are still not simulated by this test.
+
+### Resilient local album art
+
+Delayed MediaSession bitmaps, local content:// or android.resource:// artwork URIs, and MediaStyle notification icons are supported as local artwork sources. Art decoding/palette work happens off the UI thread; no INTERNET permission is added. URI changes and notification revisions invalidate the artwork cache. Code based on Islet (Apache 2.0) and Android MediaMetadata/ContentResolver APIs.

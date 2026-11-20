@@ -328,6 +328,11 @@ class IsletOverlayService : LifecycleService() {
                 if (connected) mediaMonitor.refresh()
             }
         }
+        lifecycleScope.launch {
+            IsletRepository.artworkHint.collectLatest {
+                if (attached) mediaMonitor.refresh()
+            }
+        }
     }
 
     private fun islandActions() = IslandActions(

@@ -37,6 +37,8 @@ class MediaMonitor(
     private var artKey: String? = null
     private var artwork: Bitmap? = null
     private var accent: Int? = null
+    private var artworkLoading = false
+    private var lastArtworkAttemptMs = 0L
 
     private val sessionsListener =
         MediaSessionManager.OnActiveSessionsChangedListener { controllers ->
@@ -69,6 +71,8 @@ class MediaMonitor(
         artwork = null
         artKey = null
         accent = null
+        artworkLoading = false
+        lastArtworkAttemptMs = 0L
         IsletRepository.setMedia(null)
     }
 
@@ -113,6 +117,8 @@ class MediaMonitor(
         artKey = null
         artwork = null
         accent = null
+        artworkLoading = false
+        lastArtworkAttemptMs = 0L
         if (chosen == null) {
             IsletRepository.setMedia(null)
             return
@@ -156,23 +162,42 @@ class MediaMonitor(
             ?: ""
         val duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION).coerceAtLeast(0L)
 
-        val key = "$title|$artist|$duration"
-        if (key != artKey) {
+        val hint = IsletRepository.artworkHint.value
+            ?.takeIf { it.packageName == controller.packageName }
+        // Artwork URI or notification artwork can arrive after the track title.
+        val key = ArtworkRequestIdentity.key(
+            packageName = controller.packageName,
+            title = title, artist = artist, durationMs = duration,
+            uris = listOf(
+                metadata.getString(MediaMetadata.METADATA_KEY_ALBUM_ART_URI).orEmpty(),
+                metadata.getString(MediaMetadata.METADATA_KEY_ART_URI).orEmpty(),
+                metadata.getString(MediaMetadata.METADATA_KEY_DISPLAY_ICON_URI).orEmpty(),
+            ),
+            hintRevision = hint?.revision ?: 0L,
+        )
+        val changed = key != artKey
+        if (changed) {
             artKey = key
-            val raw = metadata.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
-                ?: metadata.getBitmap(MediaMetadata.METADATA_KEY_ART)
-                ?: metadata.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON)
             artwork = null
             accent = null
-            if (raw != null) {
-                scope.launch {
-                    val scaled = withContext(Dispatchers.Default) { raw.toIslandArtwork() }
-                    val colour = withContext(Dispatchers.Default) { scaled?.accentColor() }
-                    if (artKey == key) {
-                        artwork = scaled
-                        accent = colour
-                        emit(controller, title, artist, duration, controller.playbackState)
-                    }
+            artworkLoading = false
+            lastArtworkAttemptMs = 0L
+        }
+        val now = SystemClock.elapsedRealtime()
+        if (artwork == null && !artworkLoading &&
+            (changed || now - lastArtworkAttemptMs >= 2_000L)) {
+            artworkLoading = true
+            lastArtworkAttemptMs = now
+            scope.launch {
+                val cover = withContext(Dispatchers.IO) {
+                    runCatching { MediaArtworkLoader.load(context, metadata, hint?.bitmap) }.getOrNull()
+                }
+                val colour = withContext(Dispatchers.Default) { cover?.accentColor() }
+                if (artKey == key && active?.sessionToken == controller.sessionToken) {
+                    artworkLoading = false
+                    artwork = cover
+                    accent = colour
+                    emit(controller, title, artist, duration, controller.playbackState)
                 }
             }
         }

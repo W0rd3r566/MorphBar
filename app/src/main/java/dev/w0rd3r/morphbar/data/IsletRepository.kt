@@ -1,6 +1,8 @@
 // Adapted from Islet by Dylan Neve (Apache-2.0) for MorphBar, 2026: package migration.
 package dev.w0rd3r.morphbar.data
 
+import android.graphics.Bitmap
+import android.os.SystemClock
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -17,6 +19,18 @@ object IsletRepository {
 
     private val _media = MutableStateFlow<MediaSnapshot?>(null)
     val media: StateFlow<MediaSnapshot?> = _media.asStateFlow()
+
+    data class ArtworkHint(val packageName: String, val bitmap: Bitmap, val revision: Long)
+    private val _artworkHint = MutableStateFlow<ArtworkHint?>(null)
+    val artworkHint: StateFlow<ArtworkHint?> = _artworkHint.asStateFlow()
+
+    fun setArtworkHint(pkg: String, bitmap: Bitmap) {
+        _artworkHint.value = ArtworkHint(pkg, bitmap, SystemClock.elapsedRealtimeNanos())
+    }
+
+    fun clearArtworkHint(pkg: String) {
+        if (_artworkHint.value?.packageName == pkg) _artworkHint.value = null
+    }
 
     /** Plug/unplug moments. Also a peek, so it is an event and not a state. */
     private val _power = MutableSharedFlow<PowerSnapshot>(extraBufferCapacity = 4)
