@@ -30,7 +30,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderState
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -223,53 +222,45 @@ private fun MediaExpanded(
         // accessibility semantics, and touch targets (unlike our old
         // detectTapGestures on a 14dp progress indicator).
         if (media.canSeek && media.durationMs > 0L) {
-            Slider(
-                value = displayFraction,
-                onValueChange = { value: Float ->
-                    dragging = true
-                    previewFraction = value.coerceIn(0f, 1f)
-                    awaitingSeek = null
-                },
-                onValueChangeFinished = {
-                    if (dragging) {
-                        val to = previewFraction.coerceIn(0f, 1f)
-                        dragging = false
-                        awaitingSeek = to
-                        actions.onSeek(to)
-                    }
-                },
-                valueRange = 0f..1f,
+            // Draw the original Material3 Expressive wave. A transparent
+            // official Slider on top owns the gesture and accessibility:
+            // no replacement with the usual visible thick slider track.
+            Box(
                 modifier = Modifier.fillMaxWidth().height(42.dp),
-                colors = SliderDefaults.colors(
-                    thumbColor = accent,
-                    activeTrackColor = accent,
-                    inactiveTrackColor = accent.copy(alpha = 0.24f),
-                ),
-                // The official AndroidX slider owns all the real drag and
-                // accessibility logic. Restore the original M3 Expressive
-                // waveform by replacing ONLY its visual track.
-                thumb = { _: SliderState ->
-                    Box(
-                        Modifier
-                            .size(6.dp)
-                            .clip(CircleShape)
-                            .background(accent),
-                    )
-                },
-                track = { _: SliderState ->
-                    Box(
-                        modifier = Modifier.fillMaxWidth().height(20.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        LinearWavyProgressIndicator(
-                            progress = { displayFraction },
-                            modifier = Modifier.fillMaxWidth().height(12.dp),
-                            color = accent,
-                            trackColor = accent.copy(alpha = 0.19f),
-                        )
-                    }
-                },
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                LinearWavyProgressIndicator(
+                    progress = { displayFraction },
+                    modifier = Modifier.fillMaxWidth().height(12.dp),
+                    color = accent,
+                    trackColor = accent.copy(alpha = 0.20f),
+                )
+                Slider(
+                    value = displayFraction,
+                    onValueChange = { value ->
+                        dragging = true
+                        previewFraction = value.coerceIn(0f, 1f)
+                        awaitingSeek = null
+                    },
+                    onValueChangeFinished = {
+                        if (dragging) {
+                            val to = previewFraction.coerceIn(0f, 1f)
+                            dragging = false
+                            awaitingSeek = to
+                            actions.onSeek(to)
+                        }
+                    },
+                    valueRange = 0f..1f,
+                    modifier = Modifier.fillMaxWidth().height(42.dp),
+                    colors = SliderDefaults.colors(
+                        thumbColor = Color.Transparent,
+                        activeTrackColor = Color.Transparent,
+                        inactiveTrackColor = Color.Transparent,
+                        activeTickColor = Color.Transparent,
+                        inactiveTickColor = Color.Transparent,
+                    ),
+                )
+            }
         } else {
             Box(
                 modifier = Modifier.fillMaxWidth().height(42.dp),
