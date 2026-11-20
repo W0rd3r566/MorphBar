@@ -25,6 +25,14 @@ object IsletRepository {
     val artworkHint: StateFlow<ArtworkHint?> = _artworkHint.asStateFlow()
 
     fun setArtworkHint(pkg: String, bitmap: Bitmap) {
+        // MediaStyle may re-post the same artwork on every state update. Avoid
+        // invalidating the current cover and restarting a fade animation.
+        val previous = _artworkHint.value
+        if (previous?.packageName == pkg &&
+            previous.bitmap.width == bitmap.width &&
+            previous.bitmap.height == bitmap.height &&
+            runCatching { previous.bitmap.sameAs(bitmap) }.getOrDefault(false)
+        ) return
         _artworkHint.value = ArtworkHint(pkg, bitmap, SystemClock.elapsedRealtimeNanos())
     }
 
