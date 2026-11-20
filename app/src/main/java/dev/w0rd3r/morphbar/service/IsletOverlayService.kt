@@ -262,8 +262,10 @@ class IsletOverlayService : LifecycleService() {
         // aligned with the camera but cannot reliably receive taps there.
         // Keep the idle camera mask at the cutout; move interactive states
         // into the touchable app area just below the system status bar.
-        val interactive = controller.state.value.phase != IslandPhase.Resting
-        val anchor = if (interactive) {
+        // Compact is visually centred on the real front camera, just like
+        // the original Islet. Expanded cards are the only state that moves
+        // under the protected Android status bar for reliable controls.
+        val anchor = if (expanded) {
             cutout.statusBarHeight + (4f * density).roundToInt()
         } else {
             cutout.top - bleed - topMargin

@@ -108,3 +108,17 @@ The collapse handle used to close on a single Android drag event with less than 
 ### Resilient local album art
 
 Delayed MediaSession bitmaps, local content:// or android.resource:// artwork URIs, and MediaStyle notification icons are supported as local artwork sources. Art decoding/palette work happens off the UI thread; no INTERNET permission is added. URI changes and notification revisions invalidate the artwork cache. Code based on Islet (Apache 2.0) and Android MediaMetadata/ContentResolver APIs.
+
+
+## v0.6.0 — restored Pixel camera island and wavy seeker
+
+The compact pill again sits at the physical camera cutout on Pixel 9a.
+A transparent 104×44dp hit zone immediately below the pill accepts
+tap/drag-to-expand in the normal application region when Android SystemUI
+intercepts the status bar. Expansion alone moves the card below the
+protected status bar. This is a platform limitation, not a fake iOS privilege.
+
+The media slider again displays the authentic Material 3 Expressive
+**LinearWavyProgressIndicator** (the snake) with a tiny unobtrusive dot,
+using AndroidX Slider's custom `track` and `thumb` slots. It still allows
+press-and-drag seeking and retains explicit close / swipe-up actions.

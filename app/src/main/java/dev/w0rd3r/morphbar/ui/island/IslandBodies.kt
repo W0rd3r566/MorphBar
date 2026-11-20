@@ -4,6 +4,7 @@ package dev.w0rd3r.morphbar.ui.island
 import android.os.SystemClock
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -243,6 +244,30 @@ private fun MediaExpanded(
                     activeTrackColor = accent,
                     inactiveTrackColor = accent.copy(alpha = 0.24f),
                 ),
+                // The official AndroidX slider owns all the real drag and
+                // accessibility logic. Restore the original M3 Expressive
+                // waveform by replacing ONLY its visual track.
+                thumb = { _ ->
+                    Box(
+                        Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(accent),
+                    )
+                },
+                track = { _ ->
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(20.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        LinearWavyProgressIndicator(
+                            progress = { displayFraction },
+                            modifier = Modifier.fillMaxWidth().height(12.dp),
+                            color = accent,
+                            trackColor = accent.copy(alpha = 0.19f),
+                        )
+                    }
+                },
             )
         } else {
             Box(

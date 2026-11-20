@@ -188,6 +188,38 @@ fun Island(
                 }
             }
 
+            if (state.phase == IslandPhase.Compact) {
+                // The Pixel status bar is SystemUI-owned: an app cannot assume
+                // touches reach the camera cutout. Reserve a TRANSPARENT grab
+                // zone directly underneath it. This extends the window below
+                // the status bar without moving the visible capsule away
+                // from the physical camera, unlike the previous regression.
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = height + 6.dp)
+                        .size(width = 104.dp, height = 44.dp)
+                        .clickable(onClickLabel = "Раскрыть MorphBar") {
+                            actions.onTap()
+                        }
+                        .pointerInput(Unit) {
+                            var traveled = 0f
+                            detectVerticalDragGestures(
+                                onDragStart = { traveled = 0f },
+                                onDragCancel = { traveled = 0f },
+                                onDragEnd = {
+                                    if (traveled > 14f) actions.onExpand()
+                                    traveled = 0f
+                                },
+                                onVerticalDrag = { change, amount ->
+                                    traveled += amount
+                                    change.consume()
+                                },
+                            )
+                        },
+                )
+            }
+
             if (expanded) {
                 // A 48dp close button is independent of media and notification
                 // child gesture detectors, unlike the old 56x18dp drag strip.
