@@ -196,8 +196,8 @@ private fun targetSize(
     IslandPhase.Resting -> DpSize(restingWidth, restingHeight)
 
     IslandPhase.Compact -> DpSize(
-        maxOf(settings.compactWidth.dp, restingWidth + 64.dp),
-        maxOf(restingHeight + 2.dp, 26.dp),
+        maxOf(settings.compactWidth.dp, restingWidth + 32.dp).coerceAtMost(94.dp),
+        maxOf(restingHeight + 2.dp, 30.dp).coerceAtMost(38.dp),
     )
 
     IslandPhase.Expanded -> DpSize(
