@@ -162,10 +162,18 @@ fun HomeScreen() {
                     ) { value -> store.update { it.copy(showMedia = value) } }
                     SwitchRow(
                         title = "Уведомления",
-                        subtitle = "Только важные события из приложений",
+                        subtitle = "Компактные события вместо больших баннеров",
                         icon = Icons.Rounded.Notifications,
                         checked = settings.showNotifications,
                     ) { value -> store.update { it.copy(showNotifications = value) } }
+                    if (settings.showNotifications) {
+                        SwitchRow(
+                            title = "Не дублировать баннеры Android",
+                            subtitle = "Системные всплывающие уведомления остаются в Android; выключи, если хочешь видеть их и в MorphBar",
+                            icon = Icons.Rounded.Layers,
+                            checked = settings.avoidSystemBanners,
+                        ) { value -> store.update { it.copy(avoidSystemBanners = value) } }
+                    }
                     SwitchRow(
                         title = "Зарядка",
                         subtitle = "Показывать подключение зарядки",

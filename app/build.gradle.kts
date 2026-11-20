@@ -27,8 +27,8 @@ android {
         applicationId = "dev.w0rd3r.morphbar"
         minSdk = 31
         targetSdk = 37
-        versionCode = 3
-        versionName = "0.3.0"
+        versionCode = 4
+        versionName = "0.4.0"
         resourceConfigurations += listOf("en", "ru")
     }
 
@@ -121,4 +121,5 @@ dependencies {
     implementation(libs.androidx.savedstate)
 
     debugImplementation(libs.androidx.ui.tooling)
+    testImplementation("junit:junit:4.13.2")
 }

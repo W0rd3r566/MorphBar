@@ -57,3 +57,21 @@ The next phase focuses on:
 2. Reliable music playback, animations and multi-activity priority.
 3. Per-app notification filters, privacy controls, timers, and Bluetooth.
 4. Battery usage, accessibility and regression checks on Android 17.
+
+
+## Pixel 9a / Android 17: duplicate notification fix (v0.4.0)
+
+Native Android high-importance heads-up notifications remain untouched.
+MorphBar does not show a second full-size banner when an app posts a notification.
+By default, its "Не дублировать баннеры Android" setting excludes
+high-importance notification channels from MorphBar's own peeks; other
+notifications show a small compact capsule and expand **only on user tap**.
+
+This is importance-based filtering, not a reliable way to detect whether Android
+actually displayed a heads-up. For muted channels, DND or disabled heads-up
+banners, toggle the setting off to mirror those notifications as compact peeks.
+MorphBar cannot replace SystemUI notifications without privileged APIs.
+
+Pixel regression checklist: idle camera mask, native Telegram heads-up without
+duplicate, debug notification compact/tap-to-expand, music pause/seek/next,
+charging preview, portrait/landscape and system status icons.

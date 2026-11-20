@@ -60,6 +60,8 @@ class IsletNotificationListener : NotificationListenerService() {
 
     private fun convert(sbn: StatusBarNotification, rankingMap: RankingMap?): NoticeSnapshot? {
         if (sbn.packageName == packageName) return null
+        val preferences = SettingsStore.get(this).current
+        if (!preferences.showNotifications) return null
 
         val n = sbn.notification ?: return null
         val flags = n.flags
@@ -76,6 +78,13 @@ class IsletNotificationListener : NotificationListenerService() {
                 if (ranking.isAmbient) return null
                 if (ranking.importance < android.app.NotificationManager.IMPORTANCE_DEFAULT) return null
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ranking.isSuspended) return null
+                // High importance is eligible for Android's native heads-up banner.
+                // Do not draw a second banner unless explicitly requested.
+                if (!NotificationPresentationPolicy.shouldMirror(
+                        importance = ranking.importance,
+                        avoidSystemBanners = preferences.avoidSystemBanners,
+                    )
+                ) return null
             }
         }
 
@@ -114,7 +123,9 @@ class IsletNotificationListener : NotificationListenerService() {
                     intent = action.actionIntent,
                     isReply = !action.remoteInputs.isNullOrEmpty(),
                 )
-            }.filter { it.title.isNotEmpty() },
+            // RemoteInput replies require an input UI and filled PendingIntent;
+            // an empty send() would not send the user's message.
+            }.filter { it.title.isNotEmpty() && !it.isReply },
         )
     }
 

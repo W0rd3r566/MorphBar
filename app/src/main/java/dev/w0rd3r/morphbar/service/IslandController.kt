@@ -100,11 +100,12 @@ class IslandController(
     }
 
     fun expand() {
-        if (IsletRepository.media.value != null) {
+        // Expand the visible notice before any background media session.
+        if (peek.value != null) {
+            pinPeek()
+        } else if (IsletRepository.media.value != null) {
             idleJob?.cancel()
             mediaExpanded.value = true
-        } else if (peek.value != null) {
-            pinPeek()
         }
     }
 
@@ -173,12 +174,8 @@ class IslandController(
 
         return when {
             peekContent != null -> IslandUiState(
-                // A charging peek is a glance, not a card; it only grows if tapped.
-                phase = if (currentPeek is Peek.Power && !pinned) {
-                    IslandPhase.Compact
-                } else {
-                    IslandPhase.Expanded
-                },
+                // Never auto-expand a second full-size alert over SystemUI.
+                phase = if (pinned) IslandPhase.Expanded else IslandPhase.Compact,
                 content = peekContent,
                 background = mediaContent,
             )

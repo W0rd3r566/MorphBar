@@ -24,6 +24,7 @@ data class IsletSettings(
     // Content sources.
     val showMedia: Boolean = true,
     val showNotifications: Boolean = true,
+    val avoidSystemBanners: Boolean = true,
     val showCharging: Boolean = true,
 
     // Behaviour.
@@ -75,6 +76,7 @@ class SettingsStore private constructor(context: Context) {
         bleedY = prefs.getFloat(KEY_BLEED_Y, 1f),
         showMedia = prefs.getBoolean(KEY_MEDIA, true),
         showNotifications = prefs.getBoolean(KEY_NOTIFS, true),
+        avoidSystemBanners = prefs.getBoolean(KEY_AVOID_BANNERS, true),
         showCharging = prefs.getBoolean(KEY_CHARGING, true),
         peekSeconds = prefs.getInt(KEY_PEEK, 4),
         compactWidth = prefs.getFloat(KEY_COMPACT_W, 88f).coerceIn(74f, 94f),
@@ -102,6 +104,7 @@ class SettingsStore private constructor(context: Context) {
             putFloat(KEY_BLEED_Y, next.bleedY)
             putBoolean(KEY_MEDIA, next.showMedia)
             putBoolean(KEY_NOTIFS, next.showNotifications)
+            putBoolean(KEY_AVOID_BANNERS, next.avoidSystemBanners)
             putBoolean(KEY_CHARGING, next.showCharging)
             putInt(KEY_PEEK, next.peekSeconds)
             putFloat(KEY_COMPACT_W, next.compactWidth)
@@ -129,6 +132,7 @@ class SettingsStore private constructor(context: Context) {
         private const val KEY_BLEED_Y = "bleed_y"
         private const val KEY_MEDIA = "show_media"
         private const val KEY_NOTIFS = "show_notifications"
+        private const val KEY_AVOID_BANNERS = "avoid_system_banners"
         private const val KEY_CHARGING = "show_charging"
         private const val KEY_PEEK = "peek_seconds"
         private const val KEY_COMPACT_W = "compact_width"
