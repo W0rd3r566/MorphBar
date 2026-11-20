@@ -75,3 +75,24 @@ MorphBar cannot replace SystemUI notifications without privileged APIs.
 Pixel regression checklist: idle camera mask, native Telegram heads-up without
 duplicate, debug notification compact/tap-to-expand, music pause/seek/next,
 charging preview, portrait/landscape and system status icons.
+
+
+## MorphBar v0.5 — usable media controls and dismiss affordances
+
+- Replaced Islet's tap-only `LinearWavyProgressIndicator + detectTapGestures`
+  with the actual **Apache-licensed AndroidX Material 3 Slider**. Tap or drag
+  the thumb continuously, with local progress preview; commit the seek only at
+  gesture end to avoid spamming the player.
+- Players without MediaSession seek support still display progress but cannot
+  fake an interaction.
+- All expanded cards now have a proper visible close icon (48dp touch size)
+  and a wide bottom collapse handle (120x40dp, tap or swipe up).
+- Expanded layouts reserve space for the close button; the media card is taller
+  so the slider and player buttons do not collide.
+- Cutout debug guides only show while idle at the camera location, not over an
+  active song thumbnail.
+
+Upstream: [Islet](https://github.com/dylanneve1/islet) by Dylan Neve,
+Apache-2.0. Slider interaction design follows the [official Compose Material 3
+Slider component](https://developer.android.com/develop/ui/compose/components/slider).
+This is a source change and CI check, NOT device-level validation on Pixel 9a.

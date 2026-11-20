@@ -4,7 +4,6 @@ package dev.w0rd3r.morphbar.ui.island
 import android.os.SystemClock
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +28,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -36,13 +37,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -140,6 +142,35 @@ private fun MediaExpanded(
 ) {
     val media = content.media
     var now by remember { mutableLongStateOf(SystemClock.elapsedRealtime()) }
+    // Keep a local preview while the user drags the native Material 3 slider.
+    // Remote MediaSession updates arrive asynchronously; an optimistic preview
+    // prevents the thumb from jumping backwards immediately after release.
+    var dragging by remember(media.packageName, media.title, media.durationMs) {
+        mutableStateOf(false)
+    }
+    var previewFraction by remember(media.packageName, media.title, media.durationMs) {
+        mutableFloatStateOf(0f)
+    }
+    var awaitingSeek by remember(media.packageName, media.title, media.durationMs) {
+        mutableStateOf<Float?>(null)
+    }
+    LaunchedEffect(awaitingSeek) {
+        if (awaitingSeek != null) {
+            delay(1_200)
+            awaitingSeek = null
+        }
+    }
+    val displayFraction = when {
+        dragging -> previewFraction
+        awaitingSeek != null -> awaitingSeek!!
+        else -> media.progress(now)
+    }.coerceIn(0f, 1f)
+    val displayPosition = if (dragging || awaitingSeek != null) {
+        (media.durationMs * displayFraction).toLong()
+    } else {
+        media.livePositionMs(now)
+    }
+
     LaunchedEffect(media.playing, media.positionUpdatedAtUptime) {
         while (media.playing) {
             now = SystemClock.elapsedRealtime()
@@ -154,6 +185,7 @@ private fun MediaExpanded(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(end = 50.dp) // room for the 48dp close button
                 .clip(RoundedCornerShape(20.dp))
                 .clickable(onClick = actions.onOpenMedia),
             verticalAlignment = Alignment.CenterVertically,
@@ -185,35 +217,52 @@ private fun MediaExpanded(
 
         Spacer(Modifier.height(14.dp))
 
-        // Tap anywhere along the bar to seek. Media sessions that do not
-        // advertise ACTION_SEEK_TO simply do not get the gesture.
-        LinearWavyProgressIndicator(
-            progress = { media.progress(now) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(14.dp)
-                .then(
-                    if (media.canSeek) {
-                        Modifier.pointerInput(media.durationMs) {
-                            detectTapGestures { offset ->
-                                actions.onSeek((offset.x / size.width).coerceIn(0f, 1f))
-                            }
-                        }
-                    } else {
-                        Modifier
-                    },
+        // Official Material 3 Slider supports press-and-drag, tapping,
+        // accessibility semantics, and touch targets (unlike our old
+        // detectTapGestures on a 14dp progress indicator).
+        if (media.canSeek && media.durationMs > 0L) {
+            Slider(
+                value = displayFraction,
+                onValueChange = { value ->
+                    dragging = true
+                    previewFraction = value.coerceIn(0f, 1f)
+                    awaitingSeek = null
+                },
+                onValueChangeFinished = {
+                    if (dragging) {
+                        val to = previewFraction.coerceIn(0f, 1f)
+                        dragging = false
+                        awaitingSeek = to
+                        actions.onSeek(to)
+                    }
+                },
+                valueRange = 0f..1f,
+                modifier = Modifier.fillMaxWidth().height(42.dp),
+                colors = SliderDefaults.colors(
+                    thumbColor = accent,
+                    activeTrackColor = accent,
+                    inactiveTrackColor = accent.copy(alpha = 0.24f),
                 ),
-            color = accent,
-            trackColor = accent.copy(alpha = 0.20f),
-        )
-
-        Spacer(Modifier.height(4.dp))
+            )
+        } else {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(42.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                LinearWavyProgressIndicator(
+                    progress = { displayFraction },
+                    modifier = Modifier.fillMaxWidth().height(10.dp),
+                    color = accent,
+                    trackColor = accent.copy(alpha = 0.20f),
+                )
+            }
+        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(media.livePositionMs(now).asClock(), color = InkMuted, fontSize = 11.sp)
+            Text(displayPosition.asClock(), color = InkMuted, fontSize = 11.sp)
             Text(media.durationMs.asClock(), color = InkMuted, fontSize = 11.sp)
         }
 
@@ -273,7 +322,10 @@ private fun NoticeExpanded(
             .clickable(enabled = notice.contentIntent != null) { actions.onOpenNotice(notice) }
             .padding(horizontal = 20.dp, vertical = 16.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(end = 46.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             AppGlyph(notice.smallIcon, accent, 34.dp)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
@@ -328,7 +380,7 @@ private fun NoticeExpanded(
 private fun PowerExpanded(content: IslandContent.Power, accent: Color) {
     val power = content.power
     Row(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp),
+        modifier = Modifier.fillMaxSize().padding(start = 24.dp, end = 58.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(

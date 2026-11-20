@@ -14,9 +14,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -184,29 +190,54 @@ fun Island(
                 }
             }
 
-            // A small, explicit collapse control outside the player's buttons.
-            // This is reachable because expanded cards are below the status bar.
             if (expanded) {
+                // A 48dp close button is independent of media and notification
+                // child gesture detectors, unlike the old 56x18dp drag strip.
+                IconButton(
+                    onClick = actions.onCollapse,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 3.dp, end = 3.dp)
+                        .size(48.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Close,
+                        contentDescription = "Свернуть MorphBar",
+                        tint = Color.White.copy(alpha = 0.82f),
+                    )
+                }
+                // 120x40dp hit area with a visible swipe handle. Swipe up,
+                // or tap anywhere in the area, to close the expanded surface.
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
-                        .size(width = 56.dp, height = 18.dp)
+                        .size(width = 120.dp, height = 40.dp)
+                        .pointerInput(Unit) {
+                            detectVerticalDragGestures(
+                                onVerticalDrag = { _, dragAmount ->
+                                    if (dragAmount < -6f) actions.onCollapse()
+                                },
+                            )
+                        }
                         .clickable(onClickLabel = "Свернуть MorphBar") {
                             actions.onCollapse()
                         },
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.BottomCenter,
                 ) {
                     Box(
                         Modifier
-                            .size(width = 28.dp, height = 3.dp)
+                            .padding(bottom = 10.dp)
+                            .size(width = 40.dp, height = 4.dp)
                             .clip(RoundedCornerShape(50))
-                            .background(Color.White.copy(alpha = 0.38f)),
+                            .background(Color.White.copy(alpha = 0.35f)),
                     )
                 }
             }
         }
 
-        if (settings.alignmentGuide) {
+        // This diagnostic is meaningful only while the overlay remains at
+        // the physical camera cutout. Active cards are moved under SystemUI.
+        if (settings.alignmentGuide && state.phase == IslandPhase.Resting) {
             AlignmentGuide(geometry, restingWidth, restingHeight)
         }
     }
@@ -240,11 +271,11 @@ private fun targetSize(
             .coerceAtMost(332.dp)
             .coerceAtMost(displayWidth - 28.dp),
         when (val content = state.content) {
-            is IslandContent.Media -> 188.dp
+            is IslandContent.Media -> 224.dp
             is IslandContent.Notice ->
-                if (content.notice.actions.isEmpty()) 118.dp else 160.dp
+                if (content.notice.actions.isEmpty()) 146.dp else 184.dp
 
-            is IslandContent.Power -> 78.dp
+            is IslandContent.Power -> 102.dp
             IslandContent.Empty -> maxOf(restingHeight + 2.dp, 26.dp)
         },
     )
