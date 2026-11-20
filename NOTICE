@@ -1,0 +1,8 @@
+MorphBar (2026) is derived from Islet by Dylan Neve.
+Original source: https://github.com/dylanneve1/islet
+Copyright 2026 Dylan Neve.
+Original work is licensed under Apache License, Version 2.0; see LICENSE.
+
+Changes: MorphBar application ID / package, project identity, resources, launcher icon,
+CI automation, and subsequent UI and behavior changes (see Git history).
+MorphBar is an independent modification and is not an official Islet release.
