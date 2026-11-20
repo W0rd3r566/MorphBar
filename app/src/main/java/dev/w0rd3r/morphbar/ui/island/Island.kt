@@ -271,11 +271,11 @@ private fun targetSize(
             .coerceAtMost(332.dp)
             .coerceAtMost(displayWidth - 28.dp),
         when (val content = state.content) {
-            is IslandContent.Media -> 224.dp
+            is IslandContent.Media -> 252.dp
             is IslandContent.Notice ->
                 if (content.notice.actions.isEmpty()) 146.dp else 184.dp
 
-            is IslandContent.Power -> 102.dp
+            is IslandContent.Power -> 124.dp
             IslandContent.Empty -> maxOf(restingHeight + 2.dp, 26.dp)
         },
     )

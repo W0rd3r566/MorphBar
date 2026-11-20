@@ -96,3 +96,7 @@ Upstream: [Islet](https://github.com/dylanneve1/islet) by Dylan Neve,
 Apache-2.0. Slider interaction design follows the [official Compose Material 3
 Slider component](https://developer.android.com/develop/ui/compose/components/slider).
 This is a source change and CI check, NOT device-level validation on Pixel 9a.
+
+### v0.5.1 sizing fix
+
+Reserved enough vertical space between playback transport controls and the new 120x40dp collapse handle, and between charging status and the handle. Prevents the expanded close surface from obscuring/taking input intended for playback buttons.
