@@ -70,7 +70,22 @@ data class CutoutGeometry(
             val rotation = context.display.rotation
 
             val cutout = insets.displayCutout
-            val rect = cutout?.let { pickTopRect(it.boundingRects, it.boundingRectTop, displayHeight) }
+            // Android can report the full top exclusion region instead of the tiny
+            // physical camera. Never turn that region into a giant black capsule.
+            val rawRect = cutout?.let { pickTopRect(it.boundingRects, it.boundingRectTop, displayHeight) }
+            val rect = rawRect?.let { raw ->
+                val maxCameraSize = (36f * density).roundToInt()
+                if (raw.width() <= maxCameraSize && raw.height() <= maxCameraSize) {
+                    raw
+                } else {
+                    // Conservative Pixel-like camera hole. Keep the reported X
+                    // position, center vertically inside the status bar.
+                    val d = (28f * density).roundToInt()
+                    val x = raw.centerX()
+                    val y = if (raw.top <= 0 && raw.height() >= statusBar / 2) statusBar / 2 else raw.centerY()
+                    Rect(x - d / 2, y - d / 2, x + (d + 1) / 2, y + (d + 1) / 2)
+                }
+            }
 
             return if (rect != null && !rect.isEmpty) {
                 CutoutGeometry(

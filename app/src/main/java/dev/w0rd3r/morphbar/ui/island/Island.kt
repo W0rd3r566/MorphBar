@@ -56,7 +56,7 @@ val IslandMargin: Dp = 12.dp
  */
 val IslandTopMargin: Dp = 2.dp
 
-private val ExpandedCorner = 34.dp
+private val ExpandedCorner = 28.dp
 
 data class IslandActions(
     val onTap: () -> Unit = {},
@@ -119,10 +119,10 @@ fun Island(
             modifier = Modifier
                 .size(width, height)
                 .clip(shape)
-                .background(Color.Black)
+                .background(if (expanded) Color(0xFF17191D) else Color.Black)
                 .then(
                     if (expanded) {
-                        Modifier.border(Dp.Hairline, accent.copy(alpha = 0.22f), shape)
+                        Modifier.border(Dp.Hairline, Color.White.copy(alpha = 0.14f), shape)
                     } else {
                         Modifier
                     },
@@ -201,13 +201,15 @@ private fun targetSize(
     )
 
     IslandPhase.Expanded -> DpSize(
-        (displayWidth * settings.expandedWidthFraction).coerceAtMost(displayWidth - 16.dp),
+        (displayWidth * settings.expandedWidthFraction)
+            .coerceAtMost(332.dp)
+            .coerceAtMost(displayWidth - 28.dp),
         when (val content = state.content) {
-            is IslandContent.Media -> 200.dp
+            is IslandContent.Media -> 188.dp
             is IslandContent.Notice ->
-                if (content.notice.actions.isEmpty()) 136.dp else 188.dp
+                if (content.notice.actions.isEmpty()) 118.dp else 160.dp
 
-            is IslandContent.Power -> 108.dp
+            is IslandContent.Power -> 78.dp
             IslandContent.Empty -> maxOf(restingHeight + 2.dp, 26.dp)
         },
     )

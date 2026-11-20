@@ -132,45 +132,42 @@ fun HomeScreen() {
             }
 
             if (!ready) {
-                item { SectionHeader("Set up") }
+                item { SectionHeader("Разрешения") }
                 item {
                     PermissionCard(
-                        title = "Display over other apps",
-                        body = "Lets MorphBar paint the pill on top of whatever you are doing. " +
-                            "It draws one small window and nothing else.",
+                        title = "Поверх других приложений",
+                        body = "Разрешение для отображения капсулы поверх приложений.",
                         granted = overlayGranted,
                         onGrant = { context.openOverlaySettings() },
                     )
                 }
                 item {
                     PermissionCard(
-                        title = "Notification access",
-                        body = "One permission covers both halves of the island: what is playing " +
-                            "and what just arrived. MorphBar has no internet permission, so nothing " +
-                            "it reads can leave the phone.",
+                        title = "Доступ к уведомлениям",
+                        body = "Нужно для музыки и уведомлений. У MorphBar нет доступа к интернету.",
                         granted = listenerGranted,
                         onGrant = { context.openListenerSettings() },
                     )
                 }
             }
 
-            item { SectionHeader("What it shows") }
+            item { SectionHeader("События") }
             item {
                 SettingsCard {
                     SwitchRow(
-                        title = "Now playing",
+                        title = "Музыка",
                         subtitle = "Artwork, controls and a live progress bar",
                         icon = Icons.Rounded.PlayCircle,
                         checked = settings.showMedia,
                     ) { value -> store.update { it.copy(showMedia = value) } }
                     SwitchRow(
-                        title = "Notifications",
+                        title = "Уведомления",
                         subtitle = "Peek at anything your channels let through",
                         icon = Icons.Rounded.Notifications,
                         checked = settings.showNotifications,
                     ) { value -> store.update { it.copy(showNotifications = value) } }
                     SwitchRow(
-                        title = "Charging",
+                        title = "Зарядка",
                         subtitle = "A short battery peek when you plug in",
                         icon = Icons.Rounded.BatteryChargingFull,
                         checked = settings.showCharging,
@@ -178,7 +175,7 @@ fun HomeScreen() {
                 }
             }
 
-            item { SectionHeader("Alignment") }
+            item { SectionHeader("Положение капсулы") }
             item {
                 AlignmentCard(
                     geometry = geometry,
@@ -196,23 +193,23 @@ fun HomeScreen() {
                 )
             }
 
-            item { SectionHeader("Shape and feel") }
+            item { SectionHeader("Внешний вид") }
             item {
                 SettingsCard {
                     SliderRow(
-                        title = "Compact width",
+                        title = "Ширина капсулы",
                         value = settings.compactWidth,
                         range = 110f..260f,
                         valueLabel = "${settings.compactWidth.roundToInt()} dp",
                     ) { value -> store.update { it.copy(compactWidth = value) } }
                     SliderRow(
-                        title = "Expanded width",
+                        title = "Ширина карточки",
                         value = settings.expandedWidthFraction,
-                        range = 0.7f..1f,
+                        range = 0.55f..0.92f,
                         valueLabel = "${(settings.expandedWidthFraction * 100).roundToInt()}%",
                     ) { value -> store.update { it.copy(expandedWidthFraction = value) } }
                     SliderRow(
-                        title = "Peek length",
+                        title = "Время показа",
                         value = settings.peekSeconds.toFloat(),
                         range = 2f..10f,
                         steps = 7,
@@ -220,36 +217,35 @@ fun HomeScreen() {
                     ) { value -> store.update { it.copy(peekSeconds = value.roundToInt()) } }
                     HorizontalDivider(Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
                     SwitchRow(
-                        title = "Colour from album art",
+                        title = "Цвет из обложки",
                         subtitle = "Otherwise the island borrows your wallpaper palette",
                         icon = Icons.Rounded.Colorize,
                         checked = settings.albumArtAccent,
                     ) { value -> store.update { it.copy(albumArtAccent = value) } }
                     SwitchRow(
-                        title = "Dim behind when expanded",
+                        title = "Затемнять фон при музыке",
                         icon = Icons.Rounded.Layers,
                         checked = settings.scrimBehindExpanded,
                     ) { value -> store.update { it.copy(scrimBehindExpanded = value) } }
                     SwitchRow(
-                        title = "Haptics",
+                        title = "Виброотклик",
                         icon = Icons.Rounded.Vibration,
                         checked = settings.haptics,
                     ) { value -> store.update { it.copy(haptics = value) } }
                 }
             }
 
-            item { SectionHeader("Behaviour") }
+            item { SectionHeader("Поведение") }
             item {
                 SettingsCard {
                     SwitchRow(
-                        title = "Tappable when idle",
-                        subtitle = "Off means the island ignores touches with nothing to show, " +
-                            "so swiping down over the camera works exactly as it does now",
+                        title = "Касания в ожидании",
+                        subtitle = "Выкл. — свайп для открытия шторки работает как обычно",
                         icon = Icons.Rounded.CenterFocusStrong,
                         checked = settings.tapAtRest,
                     ) { value -> store.update { it.copy(tapAtRest = value) } }
                     SwitchRow(
-                        title = "Follow into landscape",
+                        title = "Показывать горизонтально",
                         subtitle = "Off hides the island when the phone is not upright",
                         icon = Icons.Rounded.ScreenRotation,
                         checked = settings.landscape == LandscapeBehaviour.Follow,
@@ -265,14 +261,14 @@ fun HomeScreen() {
                         }
                     }
                     SwitchRow(
-                        title = "Start after reboot",
+                        title = "Запуск после перезагрузки",
                         icon = Icons.Rounded.Bolt,
                         checked = settings.startOnBoot,
                     ) { value -> store.update { it.copy(startOnBoot = value) } }
                 }
             }
 
-            item { SectionHeader("Try it") }
+            item { SectionHeader("Проверка") }
             item {
                 SettingsCard {
                     Row(
@@ -282,7 +278,7 @@ fun HomeScreen() {
                         FilledTonalButton(
                             onClick = { IsletRepository.postNotice(demoNotice()) },
                             modifier = Modifier.weight(1f),
-                        ) { Text("Fake alert") }
+                        ) { Text("Тест уведомления") }
                         FilledTonalButton(
                             onClick = {
                                 IsletRepository.postPower(
@@ -290,12 +286,12 @@ fun HomeScreen() {
                                 )
                             },
                             modifier = Modifier.weight(1f),
-                        ) { Text("Fake charge") }
+                        ) { Text("Тест зарядки") }
                     }
                 }
             }
 
-            item { SectionHeader("About") }
+            item { SectionHeader("О приложении") }
             item { AboutCard(geometry) }
         }
     }
@@ -320,16 +316,16 @@ private fun MasterCard(enabled: Boolean, ready: Boolean, onToggle: (Boolean) -> 
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    text = if (enabled) "Island is on" else "Island is off",
+                    text = if (enabled) "MorphBar включён" else "MorphBar выключен",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Medium,
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = when {
-                        !ready -> "Grant the two permissions below to switch it on"
-                        enabled -> "Sitting on your camera, quietly"
-                        else -> "Ready when you are"
+                        !ready -> "Нужны два разрешения для работы"
+                        enabled -> "Капсула активна"
+                        else -> "Готов к запуску"
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -373,7 +369,7 @@ private fun PermissionCard(
             )
             if (!granted) {
                 Spacer(Modifier.height(14.dp))
-                Button(onClick = onGrant) { Text("Grant") }
+                Button(onClick = onGrant) { Text("Разрешить") }
             }
         }
     }
@@ -403,49 +399,48 @@ private fun AlignmentCard(
                         "${geometry.width}×${geometry.height} px, " +
                         "${geometry.centerOffsetX} px from centre"
 
-                    else -> "No cutout reported by this display — Islet is using a centred pill"
+                    else -> "Камера не определена, используем центр"
                 },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "Position comes from the display itself, so it is already right on every " +
-                    "Pixel. These nudges exist for screen protectors and for taste.",
+                text = "Позиция определяется через Android. Ползунки позволяют подстроить положение.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         SliderRow(
-            title = "Horizontal nudge",
+            title = "Сдвиг по X",
             value = offsetX,
             range = -12f..12f,
             valueLabel = "${"%.1f".format(offsetX)} dp",
             onValueChange = onOffsetX,
         )
         SliderRow(
-            title = "Vertical nudge",
+            title = "Сдвиг по Y",
             value = offsetY,
             range = -12f..12f,
             valueLabel = "${"%.1f".format(offsetY)} dp",
             onValueChange = onOffsetY,
         )
         SliderRow(
-            title = "Horizontal bleed",
+            title = "Ширина вокруг камеры",
             value = bleedX,
             range = 0f..8f,
             valueLabel = "${"%.1f".format(bleedX)} dp",
             onValueChange = onBleedX,
         )
         SliderRow(
-            title = "Vertical bleed",
+            title = "Высота вокруг камеры",
             value = bleedY,
             range = 0f..8f,
             valueLabel = "${"%.1f".format(bleedY)} dp",
             onValueChange = onBleedY,
         )
         SwitchRow(
-            title = "Show alignment guide",
+            title = "Границы камеры",
             subtitle = "Outlines the detected cutout so you can see what Islet sees",
             icon = Icons.Rounded.Visibility,
             checked = guide,
@@ -455,7 +450,7 @@ private fun AlignmentCard(
             FilledTonalButton(onClick = onReset) {
                 Icon(Icons.Rounded.RestartAlt, contentDescription = null, Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
-                Text("Reset alignment")
+                Text("Сбросить положение")
             }
         }
     }
@@ -473,9 +468,9 @@ private fun AboutCard(geometry: CutoutGeometry?) {
                 )
                 Spacer(Modifier.width(14.dp))
                 Column {
-                    Text("Islet ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleMedium)
+                    Text("MorphBar ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleMedium)
                     Text(
-                        text = "Free, open source, no ads, no accounts, no network permission",
+                        text = "Открытый код · Без рекламы · Без доступа к интернету",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -496,11 +491,11 @@ private fun AboutCard(geometry: CutoutGeometry?) {
 }
 
 private fun demoNotice() = NoticeSnapshot(
-    key = "islet-demo",
+    key = "morphbar-demo",
     packageName = "dev.w0rd3r.morphbar",
-    appLabel = "Islet",
-    title = "This is what an alert looks like",
-    text = "Tap the island to pin it open, swipe up on it to send it away.",
+    appLabel = "MorphBar",
+    title = "Тестовое уведомление",
+    text = "Нажми на капсулу, чтобы раскрыть. Свайп вверх — закрыть.",
     smallIcon = null,
     largeIcon = null,
     accent = null,

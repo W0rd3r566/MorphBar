@@ -340,12 +340,12 @@ private fun PowerExpanded(content: IslandContent.Power, accent: Color) {
         Spacer(Modifier.width(16.dp))
         Column {
             Text(
-                text = if (power.charging) "Charging" else "Unplugged",
+                text = if (power.charging) "Заряжается" else "Отключено",
                 style = MaterialTheme.typography.titleMedium,
                 color = Ink,
             )
             Text(
-                text = "${power.level}% battery",
+                text = "${power.level}% заряда",
                 style = MaterialTheme.typography.bodySmall,
                 color = InkMuted,
             )

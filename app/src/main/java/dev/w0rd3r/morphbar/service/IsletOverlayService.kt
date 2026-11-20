@@ -39,6 +39,7 @@ import dev.w0rd3r.morphbar.core.CutoutGeometry
 import dev.w0rd3r.morphbar.core.IsletSettings
 import dev.w0rd3r.morphbar.core.LandscapeBehaviour
 import dev.w0rd3r.morphbar.core.SettingsStore
+import dev.w0rd3r.morphbar.data.IslandContent
 import dev.w0rd3r.morphbar.data.IslandPhase
 import dev.w0rd3r.morphbar.data.IsletNotificationListener
 import dev.w0rd3r.morphbar.data.IsletRepository
@@ -254,7 +255,15 @@ class IsletOverlayService : LifecycleService() {
         // painted pill lands exactly on the top edge of the cutout.
         val topMargin = (IslandTopMargin.value * density).roundToInt()
         val bleed = (config.bleedY * density).roundToInt()
-        params.y = cutout.top - bleed - topMargin + (config.offsetY * density).roundToInt()
+        // Expanded cards belong below the system status bar. Its icons are
+        // always rendered over TYPE_APPLICATION_OVERLAY on stock Pixels.
+        val expanded = controller.state.value.phase == IslandPhase.Expanded
+        val anchor = if (expanded) {
+            cutout.statusBarHeight + (6f * density).roundToInt()
+        } else {
+            cutout.top - bleed - topMargin
+        }
+        params.y = anchor + (config.offsetY * density).roundToInt()
     }
 
     private fun refreshParams() {
@@ -275,7 +284,7 @@ class IsletOverlayService : LifecycleService() {
         }
 
         val expanded = state.phase == IslandPhase.Expanded
-        if (expanded && config.scrimBehindExpanded) {
+        if (expanded && config.scrimBehindExpanded && state.content is IslandContent.Media) {
             params.flags = params.flags or WindowManager.LayoutParams.FLAG_DIM_BEHIND
             params.dimAmount = 0.38f
         } else {

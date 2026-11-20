@@ -28,11 +28,11 @@ data class IsletSettings(
 
     // Behaviour.
     val peekSeconds: Int = 4,
-    val compactWidth: Float = 148f,
+    val compactWidth: Float = 128f,
     val expandedWidthFraction: Float = 0.92f,
     val tapAtRest: Boolean = false,
     val haptics: Boolean = true,
-    val scrimBehindExpanded: Boolean = true,
+    val scrimBehindExpanded: Boolean = false,
     val landscape: LandscapeBehaviour = LandscapeBehaviour.Hide,
 
     // Colour.
@@ -77,11 +77,11 @@ class SettingsStore private constructor(context: Context) {
         showNotifications = prefs.getBoolean(KEY_NOTIFS, true),
         showCharging = prefs.getBoolean(KEY_CHARGING, true),
         peekSeconds = prefs.getInt(KEY_PEEK, 4),
-        compactWidth = prefs.getFloat(KEY_COMPACT_W, 148f),
+        compactWidth = prefs.getFloat(KEY_COMPACT_W, 128f),
         expandedWidthFraction = prefs.getFloat(KEY_EXPANDED_W, 0.92f),
         tapAtRest = prefs.getBoolean(KEY_TAP_REST, false),
         haptics = prefs.getBoolean(KEY_HAPTICS, true),
-        scrimBehindExpanded = prefs.getBoolean(KEY_SCRIM, true),
+        scrimBehindExpanded = prefs.getBoolean(KEY_SCRIM, false),
         landscape = if (prefs.getBoolean(KEY_LANDSCAPE_FOLLOW, false)) {
             LandscapeBehaviour.Follow
         } else {
