@@ -11,7 +11,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -127,21 +127,35 @@ fun Island(
                         Modifier
                     },
                 )
-                .pointerInput(settings.haptics) {
-                    detectTapGestures(
-                        onTap = {
-                            if (settings.haptics) {
-                                haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+                // Only the compact capsule handles gestures at the container
+                // level. A parent pointerInput on expanded cards can conflict
+                // with the player's own clickable controls and seek gesture.
+                .then(
+                    when (state.phase) {
+                        IslandPhase.Compact -> Modifier
+                            .clickable(onClickLabel = "Раскрыть MorphBar") {
+                                if (settings.haptics) {
+                                    haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
+                                }
+                                actions.onTap()
                             }
-                            actions.onTap()
-                        },
-                    )
-                }
-                .pointerInput(Unit) {
-                    detectVerticalDragGestures { _, dragAmount ->
-                        if (dragAmount > 6f) actions.onExpand() else if (dragAmount < -6f) actions.onCollapse()
+                            .pointerInput(Unit) {
+                                detectVerticalDragGestures { _, dragAmount ->
+                                    if (dragAmount > 6f) actions.onExpand()
+                                    else if (dragAmount < -6f) actions.onCollapse()
+                                }
+                            }
+                        IslandPhase.Expanded -> Modifier
+                        IslandPhase.Resting ->
+                            if (settings.tapAtRest) {
+                                Modifier.clickable(onClickLabel = "Открыть MorphBar") {
+                                    actions.onTap()
+                                }
+                            } else {
+                                Modifier
+                            }
                     }
-                },
+                ),
             contentAlignment = Alignment.TopCenter,
         ) {
             AnimatedContent(
@@ -166,6 +180,27 @@ fun Island(
                         state = state,
                         accent = accent,
                         actions = actions,
+                    )
+                }
+            }
+
+            // A small, explicit collapse control outside the player's buttons.
+            // This is reachable because expanded cards are below the status bar.
+            if (expanded) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .size(width = 56.dp, height = 18.dp)
+                        .clickable(onClickLabel = "Свернуть MorphBar") {
+                            actions.onCollapse()
+                        },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Box(
+                        Modifier
+                            .size(width = 28.dp, height = 3.dp)
+                            .clip(RoundedCornerShape(50))
+                            .background(Color.White.copy(alpha = 0.38f)),
                     )
                 }
             }

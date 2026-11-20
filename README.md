@@ -39,3 +39,21 @@ Kotlin · Jetpack Compose · Material 3 Expressive · Android 12+
 MorphBar основан на открытом проекте [Islet](https://github.com/dylanneve1/islet) авторства Dylan Neve и сохраняет его архитектуру работы с камерой, оверлеем, уведомлениями и медиа-сессиями. Исходный код Islet распространяется по **Apache License 2.0**. См. [LICENSE](LICENSE) и [NOTICE](NOTICE).
 
 Этот репозиторий — самостоятельная модификация: изменены название, package/application ID, пользовательские строки, настройки сборки и CI. Следующие версии будут расширять дизайн и функции.
+
+
+## Interactions on Pixel (v0.3.0)
+
+Android places normal app overlays below its system status bar. The *idle* capsule
+therefore stays visually attached to the physical camera cutout but does not
+intercept status-bar gestures. When a player is active, the **interactive compact
+pill appears just below the status bar** where taps can open a card.
+
+The expanded card's media transport buttons and seek bar have their own input
+handlers; a small handle at the bottom collapses the card. The physical camera
+can no longer cover compact album artwork.
+
+The next phase focuses on:
+1. A live visual alignment and theme editor.
+2. Reliable music playback, animations and multi-activity priority.
+3. Per-app notification filters, privacy controls, timers, and Bluetooth.
+4. Battery usage, accessibility and regression checks on Android 17.

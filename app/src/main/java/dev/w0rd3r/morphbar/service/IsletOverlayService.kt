@@ -258,8 +258,13 @@ class IsletOverlayService : LifecycleService() {
         // Expanded cards belong below the system status bar. Its icons are
         // always rendered over TYPE_APPLICATION_OVERLAY on stock Pixels.
         val expanded = controller.state.value.phase == IslandPhase.Expanded
-        val anchor = if (expanded) {
-            cutout.statusBarHeight + (6f * density).roundToInt()
+        // Android owns the status bar. A TYPE_APPLICATION_OVERLAY can look
+        // aligned with the camera but cannot reliably receive taps there.
+        // Keep the idle camera mask at the cutout; move interactive states
+        // into the touchable app area just below the system status bar.
+        val interactive = controller.state.value.phase != IslandPhase.Resting
+        val anchor = if (interactive) {
+            cutout.statusBarHeight + (4f * density).roundToInt()
         } else {
             cutout.top - bleed - topMargin
         }
