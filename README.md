@@ -100,3 +100,7 @@ This is a source change and CI check, NOT device-level validation on Pixel 9a.
 ### v0.5.1 sizing fix
 
 Reserved enough vertical space between playback transport controls and the new 120x40dp collapse handle, and between charging status and the handle. Prevents the expanded close surface from obscuring/taking input intended for playback buttons.
+
+## v0.5.2: continuous swipe threshold regression
+
+The collapse handle used to close on a single Android drag event with less than -6 px motion. This made slow swipes unreliable: individual frames often moved only 1–5 px. The new detector accumulates motion from the entire gesture, closes on drag end after 24 dp upward travel, cancels safely, and retains tap-to-close. This pure policy is covered by JVM unit tests. Real-device gestures are still not simulated by this test.

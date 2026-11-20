@@ -14,9 +14,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -212,10 +210,26 @@ fun Island(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .size(width = 120.dp, height = 40.dp)
-                        .pointerInput(Unit) {
+                        .pointerInput(density) {
+                            // Drag deltas arrive in small per-frame fragments.
+                            // Only the total displacement should trigger
+                            // collapse, never one arbitrary frame delta.
+                            var totalDragPx = 0f
+                            val thresholdPx = with(density) { 24.dp.toPx() }
                             detectVerticalDragGestures(
-                                onVerticalDrag = { _, dragAmount ->
-                                    if (dragAmount < -6f) actions.onCollapse()
+                                onDragStart = { totalDragPx = 0f },
+                                onDragEnd = {
+                                    if (CollapseGesturePolicy.shouldCollapse(
+                                            totalDragPx,
+                                            thresholdPx,
+                                        )
+                                    ) actions.onCollapse()
+                                    totalDragPx = 0f
+                                },
+                                onDragCancel = { totalDragPx = 0f },
+                                onVerticalDrag = { change, dragAmount ->
+                                    totalDragPx += dragAmount
+                                    change.consume()
                                 },
                             )
                         }

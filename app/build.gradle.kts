@@ -27,8 +27,8 @@ android {
         applicationId = "dev.w0rd3r.morphbar"
         minSdk = 31
         targetSdk = 37
-        versionCode = 7
-        versionName = "0.5.1"
+        versionCode = 8
+        versionName = "0.5.2"
         resourceConfigurations += listOf("en", "ru")
     }
 
