@@ -30,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderState
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -224,7 +225,7 @@ private fun MediaExpanded(
         if (media.canSeek && media.durationMs > 0L) {
             Slider(
                 value = displayFraction,
-                onValueChange = { value ->
+                onValueChange = { value: Float ->
                     dragging = true
                     previewFraction = value.coerceIn(0f, 1f)
                     awaitingSeek = null
@@ -247,7 +248,7 @@ private fun MediaExpanded(
                 // The official AndroidX slider owns all the real drag and
                 // accessibility logic. Restore the original M3 Expressive
                 // waveform by replacing ONLY its visual track.
-                thumb = { _ ->
+                thumb = { _: SliderState ->
                     Box(
                         Modifier
                             .size(6.dp)
@@ -255,7 +256,7 @@ private fun MediaExpanded(
                             .background(accent),
                     )
                 },
-                track = { _ ->
+                track = { _: SliderState ->
                     Box(
                         modifier = Modifier.fillMaxWidth().height(20.dp),
                         contentAlignment = Alignment.Center,
