@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MorphBar</string>
+    <string name="tile_label">MorphBar</string>
+    <string name="channel_running">MorphBar работает</string>
+    <string name="channel_running_description">Тихое системное уведомление, пока капсула включена.</string>
+    <string name="foreground_title">MorphBar включён</string>
+    <string name="foreground_text">Музыка и уведомления</string>
+    <string name="action_turn_off">Выключить</string>
+</resources>

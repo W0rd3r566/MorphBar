@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adapted from Islet by Dylan Neve (Apache-2.0) for MorphBar, 2026. -->
+<full-backup-content>
+    <include domain="sharedpref" path="islet.xml" />
+</full-backup-content>

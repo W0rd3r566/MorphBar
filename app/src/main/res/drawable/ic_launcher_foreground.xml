@@ -1,0 +1,8 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- MorphBar original pill motif, 2026 -->
+    <path android:fillColor="#94DEC6" android:pathData="M33,43 H75 C84,43 89,48 89,54 C89,60 84,65 75,65 H33 C24,65 19,60 19,54 C19,48 24,43 33,43 Z" />
+    <path android:fillColor="#121719" android:pathData="M39,47 H69 C75,47 78,50 78,54 C78,58 75,61 69,61 H39 C33,61 30,58 30,54 C30,50 33,47 39,47 Z" />
+    <path android:fillColor="#94DEC6" android:pathData="M54,50 A4,4 0,1 0,54 58 A4,4 0,1 0,54 50 Z" />
+</vector>

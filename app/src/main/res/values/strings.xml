@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Adapted from Islet by Dylan Neve (Apache-2.0) for MorphBar, 2026. -->
+<resources>
+    <string name="app_name">MorphBar</string>
+    <string name="tile_label">MorphBar</string>
+    <string name="channel_running">MorphBar running</string>
+    <string name="channel_running_description">A silent, minimum-importance notice Android requires while the island is on screen.</string>
+    <string name="foreground_title">MorphBar is on</string>
+    <string name="foreground_text">Watching media and notifications</string>
+    <string name="action_turn_off">Turn off</string>
+</resources>
