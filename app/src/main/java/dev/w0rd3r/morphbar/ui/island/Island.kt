@@ -127,12 +127,7 @@ fun Island(
                     } else {
                         Modifier
                     },
-                )
-                // Compact and resting surfaces sit behind SystemUI's
-                // protected status-bar window: they are display-only.
-                // A separate touchable window below the status bar owns
-                // interaction, so the visible capsule never drifts off camera.
-                ,
+                ), // Display-only camera pill; controls live in a separate touchable overlay.
             contentAlignment = Alignment.TopCenter,
         ) {
             AnimatedContent(
