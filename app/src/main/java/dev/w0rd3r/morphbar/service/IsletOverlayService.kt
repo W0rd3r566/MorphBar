@@ -47,6 +47,7 @@ import dev.w0rd3r.morphbar.data.MediaMonitor
 import dev.w0rd3r.morphbar.data.PowerSnapshot
 import dev.w0rd3r.morphbar.ui.island.Island
 import dev.w0rd3r.morphbar.ui.island.IslandActions
+import dev.w0rd3r.morphbar.ui.island.CompactActionHandle
 import dev.w0rd3r.morphbar.ui.island.IslandMargin
 import dev.w0rd3r.morphbar.ui.island.IslandTopMargin
 import dev.w0rd3r.morphbar.ui.theme.IslandTheme
@@ -75,6 +76,13 @@ class IsletOverlayService : LifecycleService() {
     private var composeView: ComposeView? = null
     private var overlayOwner: ComposeOverlayOwner? = null
     private var layoutParams: WindowManager.LayoutParams? = null
+
+    // Pixel's camera window lives behind SystemUI and cannot own status-bar
+    // touches. This independent miniature window is inside the touchable
+    // application region immediately BELOW the OS status bar.
+    private var triggerView: ComposeView? = null
+    private var triggerOwner: ComposeOverlayOwner? = null
+    private var triggerParams: WindowManager.LayoutParams? = null
 
     private var geometry by mutableStateOf<CutoutGeometry?>(null)
     private var attached = false
@@ -219,6 +227,7 @@ class IsletOverlayService : LifecycleService() {
     }
 
     private fun detach() {
+        removeTrigger()
         composeView?.let { view -> runCatching { windowManager?.removeViewImmediate(view) } }
         overlayOwner?.destroy()
         composeView = null
@@ -283,11 +292,12 @@ class IsletOverlayService : LifecycleService() {
         applyPosition(params, cutout, config)
 
         val resting = state.phase == IslandPhase.Resting
-        val passive = resting && !config.tapAtRest
-        params.flags = if (passive) {
-            BASE_FLAGS or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-        } else {
+        // Only the expanded card is inside the touchable app region.
+        // Treat the camera-aligned compact/resting pill as display-only.
+        params.flags = if (!resting && state.phase == IslandPhase.Expanded) {
             BASE_FLAGS
+        } else {
+            BASE_FLAGS or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
         }
 
         val expanded = state.phase == IslandPhase.Expanded
@@ -302,6 +312,94 @@ class IsletOverlayService : LifecycleService() {
         view.visibility = if (hidden) View.GONE else View.VISIBLE
 
         runCatching { windowManager?.updateViewLayout(view, params) }
+        updateTrigger(state, cutout, config, hidden)
+    }
+
+    private fun removeTrigger() {
+        triggerView?.let { v -> runCatching { windowManager?.removeViewImmediate(v) } }
+        triggerOwner?.destroy()
+        triggerView = null
+        triggerOwner = null
+        triggerParams = null
+    }
+
+    private fun updateTrigger(
+        state: dev.w0rd3r.morphbar.data.IslandUiState,
+        cutout: CutoutGeometry,
+        config: IsletSettings,
+        hidden: Boolean,
+    ) {
+        val show = !hidden && state.phase == IslandPhase.Compact &&
+            state.content !is IslandContent.Empty
+        if (!show) {
+            removeTrigger()
+            return
+        }
+        val wm = windowManager ?: return
+        val context = windowContext ?: return
+        val d = cutout.density
+        val w = (112f * d).roundToInt()
+        val h = (48f * d).roundToInt()
+        val params = triggerParams ?: WindowManager.LayoutParams(
+            w, h, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+        }
+        params.x = cutout.centerOffsetX + (config.offsetX * d).roundToInt()
+        params.y = cutout.statusBarHeight + (4f * d).roundToInt()
+
+        val existing = triggerView
+        if (existing != null) {
+            runCatching { wm.updateViewLayout(existing, params) }
+            return
+        }
+        val owner = ComposeOverlayOwner()
+        val trigger = ComposeView(context).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+            setContent {
+                val current by controller.state.collectAsState()
+                IslandTheme {
+                    CompactActionHandle(
+                        isNotification = current.content is IslandContent.Notice,
+                        onClick = { onTriggerTap() },
+                        onLongPress = { controller.onTap() },
+                    )
+                }
+            }
+        }
+        owner.attachTo(trigger)
+        val added = runCatching { wm.addView(trigger, params) }
+        if (added.isFailure) {
+            Log.w(TAG, "Unable to add compact touch trigger", added.exceptionOrNull())
+            owner.destroy()
+            return
+        }
+        triggerView = trigger
+        triggerOwner = owner
+        triggerParams = params
+    }
+
+    private fun onTriggerTap() {
+        when (val content = controller.state.value.content) {
+            is IslandContent.Notice -> {
+                if (content.notice.contentIntent != null) {
+                    // One tap opens the original notification; long press shows
+                    // the expandable details card in MorphBar.
+                    fire(content.notice.contentIntent)
+                    controller.collapse()
+                } else {
+                    controller.onTap()
+                }
+            }
+            else -> controller.onTap()
+        }
     }
 
     private fun remeasure() {

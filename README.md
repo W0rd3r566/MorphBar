@@ -122,3 +122,24 @@ The media slider again displays the authentic Material 3 Expressive
 **LinearWavyProgressIndicator** (the snake) with a tiny unobtrusive dot,
 using AndroidX Slider's custom `track` and `thumb` slots. It still allows
 press-and-drag seeking and retains explicit close / swipe-up actions.
+
+
+## v0.6.1 — Android 17 touch handling
+
+The visible compact pill stays physically aligned with the Pixel camera.
+`TYPE_APPLICATION_OVERLAY` sits underneath SystemUI's protected status-bar
+window, so a direct tap ON the camera cutout cannot be made reliable by
+inflating a transparent hit zone. The former invisible hit zone was removed.
+While a media session or a compact notification is active, MorphBar creates
+an independent **visible 48dp mini-trigger immediately below the status bar**
+inside the application's actual touchable region. The trigger is not a second
+full media card and disappears when a card expands.
+
+Tap the mini-trigger to expand media, or open the source app for a notification.
+Long-press it to open the MorphBar notice detail card. Expanded actions,
+close affordances, the camera-aligned pill, wavy progress and cover art remain
+unchanged.
+
+No accessibility service, root, elevated/system APIs, or notification
+cancellation is used. Verified from the Android `WindowManager.LayoutParams`
+contract that application overlays are beneath system windows.

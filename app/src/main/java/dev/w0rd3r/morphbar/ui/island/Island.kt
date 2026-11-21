@@ -29,10 +29,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -84,7 +82,6 @@ fun Island(
     modifier: Modifier = Modifier,
 ) {
     val density = LocalDensity.current
-    val haptics = LocalHapticFeedback.current
 
     val restingWidth = with(density) { geometry.width.toDp() } + (settings.bleedX * 2f).dp
     val restingHeight = with(density) { geometry.height.toDp() } + (settings.bleedY * 2f).dp
@@ -131,35 +128,11 @@ fun Island(
                         Modifier
                     },
                 )
-                // Only the compact capsule handles gestures at the container
-                // level. A parent pointerInput on expanded cards can conflict
-                // with the player's own clickable controls and seek gesture.
-                .then(
-                    when (state.phase) {
-                        IslandPhase.Compact -> Modifier
-                            .clickable(onClickLabel = "Раскрыть MorphBar") {
-                                if (settings.haptics) {
-                                    haptics.performHapticFeedback(HapticFeedbackType.ContextClick)
-                                }
-                                actions.onTap()
-                            }
-                            .pointerInput(Unit) {
-                                detectVerticalDragGestures { _, dragAmount ->
-                                    if (dragAmount > 6f) actions.onExpand()
-                                    else if (dragAmount < -6f) actions.onCollapse()
-                                }
-                            }
-                        IslandPhase.Expanded -> Modifier
-                        IslandPhase.Resting ->
-                            if (settings.tapAtRest) {
-                                Modifier.clickable(onClickLabel = "Открыть MorphBar") {
-                                    actions.onTap()
-                                }
-                            } else {
-                                Modifier
-                            }
-                    }
-                ),
+                // Compact and resting surfaces sit behind SystemUI's
+                // protected status-bar window: they are display-only.
+                // A separate touchable window below the status bar owns
+                // interaction, so the visible capsule never drifts off camera.
+                ,
             contentAlignment = Alignment.TopCenter,
         ) {
             AnimatedContent(
@@ -186,38 +159,6 @@ fun Island(
                         actions = actions,
                     )
                 }
-            }
-
-            if (state.phase == IslandPhase.Compact) {
-                // The Pixel status bar is SystemUI-owned: an app cannot assume
-                // touches reach the camera cutout. Reserve a TRANSPARENT grab
-                // zone directly underneath it. This extends the window below
-                // the status bar without moving the visible capsule away
-                // from the physical camera, unlike the previous regression.
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = height + 6.dp)
-                        .size(width = 104.dp, height = 44.dp)
-                        .clickable(onClickLabel = "Раскрыть MorphBar") {
-                            actions.onTap()
-                        }
-                        .pointerInput(Unit) {
-                            var traveled = 0f
-                            detectVerticalDragGestures(
-                                onDragStart = { traveled = 0f },
-                                onDragCancel = { traveled = 0f },
-                                onDragEnd = {
-                                    if (traveled > 14f) actions.onExpand()
-                                    traveled = 0f
-                                },
-                                onVerticalDrag = { change, amount ->
-                                    traveled += amount
-                                    change.consume()
-                                },
-                            )
-                        },
-                )
             }
 
             if (expanded) {
